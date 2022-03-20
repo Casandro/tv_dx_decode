@@ -4,9 +4,9 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define SRATE 2000000.0
+#define SRATE 2000000
 
-#define FWIDTH (128)
+#define FWIDTH (64*SRATE/1000000)
 #define FLINES (312.5)
 
 #define FSIZE (FWIDTH*313)
@@ -16,6 +16,7 @@
 double image[FBSIZE];
 
 #define OLINES (625)
+#define OWIDTH (FWIDTH*2)
 
 #define TIMGSIZE (OLINES*256)
 
@@ -40,24 +41,24 @@ int main(int argc, char *argv[])
 
 		double fimg[TIMGSIZE];
 		for (line=0; line<OLINES; line++) {
-			int lpos=128*line;
+			int lpos=FWIDTH*line;
 			int px=0;
-			for (px=0; px<256; px++) {
+			for (px=0; px<OWIDTH; px++) {
 				int ppos=lpos+px;
-				fimg[line*256+px]=(image[lpos+px]*avg_f)+(fimg[line*256+px]*(1-avg_f));
+				fimg[line*OWIDTH+px]=(image[lpos+px]*avg_f)+(fimg[line*OWIDTH+px]*(1-avg_f));
 			}
 		}
 
 		double max=0;
 		double min=99999;
 		int px=0;
-		for (px=4; px<256-4; px++) {
+		for (px=4; px<OWIDTH-4; px++) {
 			double sum=0;
 			int cnt=0;
 			for (line=0; line<OLINES; line++) {
 				int x=0;
 				for (x=-4;x<=4; x++){ 
-					sum=sum+fimg[line*256+px+x];
+					sum=sum+fimg[line*OWIDTH+px+x];
 					cnt=cnt+1;
 				}
 			}
@@ -66,12 +67,12 @@ int main(int argc, char *argv[])
 			if (sum<min) min=sum;
 		}
 
-		printf("Frame %d; min=%lf max=%lf\n", frame, min, max);
+		printf("Frame %d; min %lf max %lf\n", frame, min, max);
 
 		uint8_t iimg[TIMGSIZE];
 		for (line=0; line<625; line++) {
 			int px=0;
-			for (px=0; px<256; px++) {
+			for (px=0; px<OWIDTH; px++) {
 				double fi=fimg[line*256+px];
 				double d=((fi)/(max))*0.5+0.25;
 				int v=(256-(d)*256);
@@ -85,7 +86,7 @@ int main(int argc, char *argv[])
 		snprintf(fname, sizeof(fname)-1, "IMG-%08d.pgm", frame);
 		FILE *fi=fopen(fname, "w");	
 		memset(fname, 0, sizeof(fname));
-		snprintf(fname, sizeof(fname)-1, "P5 256 625 255\n");
+		snprintf(fname, sizeof(fname)-1, "P5 %d %d 255\n",OWIDTH, OLINES);
 		fwrite(fname, strlen(fname), 1, fi);
 		fwrite(iimg, sizeof(iimg), 1, fi);
 		fclose(fi);
