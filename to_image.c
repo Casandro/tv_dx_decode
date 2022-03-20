@@ -26,8 +26,8 @@ int main(int argc, char *argv[])
 		int fpos=round(frame*312.5)*(128);
 		int line;
 
-		int avgf=1;
-		int avgl=1;
+		int avgf=10; //How many fields to average over
+		int avgl=1; //How many lines to average over
 
 		double fimg[TIMGSIZE];
 		for (line=0; line<OLINES; line++) {
@@ -37,14 +37,14 @@ int main(int argc, char *argv[])
 				int ppos=lpos+px;
 				double sum=0;
 				int fa;
-				for (fa=-avgf; fa<=avgf; fa++) {
+				for (fa=-avgf/2; fa<=-avgf+avgf; fa++) {
 					int la;
-				//	for (la=-avgl; la<=avgl; la++) {
+					for (la=-avgl/2; la<-avgl/2+avgl; la++) {
 						int epos=ppos+(la+round(fa*312.5))*128;
 						if (epos<0) continue;
 						if (epos>=PIXELS) continue;
 						sum=sum+image[epos];
-				//	}
+					}
 				}
 				fimg[line*256+px]=sum;
 			}
