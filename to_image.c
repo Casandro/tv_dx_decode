@@ -2,12 +2,12 @@
 #include <stdint.h>
 #include <math.h>
 #include <string.h>
+#include <stdlib.h>
 
 #define SRATE 2000000.0
 
 #define PIXELS 60162048
 
-double image[PIXELS];
 
 #define OLINES (625)
 
@@ -15,12 +15,36 @@ double image[PIXELS];
 
 int main(int argc, char *argv[])
 {
+	if (argc<2) {
+		printf("Usage: %s <infile>\n infile has decoded values as double floats\n", argv[0]);
+		return 1;
+	}
+
+	FILE *f=fopen(argv[1], "r");
+	if (f==NULL) {
+		printf("Couldn't open file %s\n", argv[1]);
+		return 1;
+	}
+	fseek(f, 0, SEEK_END);
+	size_t fsize=ftell(f);
+	fseek(f, 0, SEEK_SET);
+	double *image=malloc(fsize);
+	if (image==NULL) {
+		printf("Couldn't malloc\n");
+		return 1;
+	}
+	fsize=fread(image, 1, fsize, f);
+	fclose(f);
+
+	int num_pixels=fsize/sizeof(double);
+	printf("%ld octetts read => %d pixels\n", fsize, num_pixels);
+
 	int n=0;
 	double t=0;
 	double i=0;
-	fread(image, sizeof(image), 1, stdin);
 	
-	int frames=PIXELS/(313*128);
+	int frames=num_pixels/(313*128);
+	printf("%d frames\n", frames);
 	int frame=0;
 	for (frame=0; frame<frames; frame=frame+1){
 		int fpos=round(frame*312.5)*(128);
@@ -42,7 +66,7 @@ int main(int argc, char *argv[])
 					for (la=-avgl/2; la<-avgl/2+avgl; la++) {
 						int epos=ppos+(la+round(fa*312.5))*128;
 						if (epos<0) continue;
-						if (epos>=PIXELS) continue;
+						if (epos>=num_pixels) continue;
 						sum=sum+image[epos];
 					}
 				}
@@ -91,7 +115,7 @@ int main(int argc, char *argv[])
 		fwrite(fname, strlen(fname), 1, f);
 		fwrite(iimg, sizeof(iimg), 1, f);
 		fclose(f);
-
 	}
+	free(image);
 }
 

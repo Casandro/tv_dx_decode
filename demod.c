@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
 	sample_t ibuf[BLEN];
 
 	if (argc<2) {
-		fprintf(stderr, "Usage: %s <centre frequency, may be negative\n");
+		fprintf(stderr, "Usage: %s <centre frequency, may be negative\n", argv[0]);
 		return 0;
 	}
 
