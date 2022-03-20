@@ -17,19 +17,21 @@ typedef struct {
 int main(int argc, char *argv[])
 {
 	int n=0;
-	double phi=0;
-	double frq=-52.25e+3;
-	double t=0;
 
-	double min=99999;
-	double max=-min;
-	double phase_error=0;
-	double ferror=0;
 	
 	sample_t ibuf[BLEN];
 
-	if (argc<3) return 0;
+	if (argc<2) {
+		fprintf(stderr, "Usage: %s <centre frequency, may be negative\n");
+		return 0;
+	}
 
+	double phi=0;
+	double frq=atof(argv[1]);//-52.25e+3;
+	double t=0;
+
+	double phase_error=0;
+	double ferror=0;
 	double a=0;
 	double b=-5;
 
